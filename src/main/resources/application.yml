@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mybatis   
+    
+  # DataSource Config
+  datasource:
+    # Derby
+    driver-class-name: org.apache.derby.jdbc.EmbeddedDriver
+    url: jdbc:derby:db/derby/data;create=true
+    username: 
+    password: 
+    # Sqlite
+#    driver-class-name: org.sqlite.JDBC
+#    url: jdbc:sqlite:db/sqlite/data.db
+#    username:
+#    password:
+    
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8   
+  
+mybatis-plus:
+  global-config:
+    banner: false 
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl   
+
