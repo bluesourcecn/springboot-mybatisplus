@@ -4,8 +4,11 @@ import java.util.Properties;
 
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.sql.DataSource;
 
 /***
  * Mybatis数据库兼容
@@ -15,6 +18,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class DatabaseConfig {
+        @Autowired(required = false)
+        private DataSource dataSource;
 
 	@Bean
 	public DatabaseIdProvider getDatabaseIdProvider(){
@@ -34,5 +39,19 @@ public class DatabaseConfig {
 	    databaseIdProvider.setProperties(properties);
 	    return databaseIdProvider;
 	}
+        
+        /**
+         * 获取数据库类型
+         *
+         * @return 数据库类型
+         */
+        @Bean("dbType")
+        public String getDbType() {
+            boolean needDataSource = dataSource != null;
+            if (needDataSource) {
+                return new VendorDatabaseIdProvider().getDatabaseId(dataSource);
+            }
+            return null;
+        }
 	
 }
