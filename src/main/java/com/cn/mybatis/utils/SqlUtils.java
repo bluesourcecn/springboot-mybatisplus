@@ -82,6 +82,7 @@ public class SqlUtils {
      * @param <R> {@link R}
      * @return 数据库字段名
      */
+    @SuppressWarnings({"varargs"})
     public static <T, R> String toSelectColumn(boolean distinct, SFunction<T, R>... fns) {
         StringBuilder selectColumn = new StringBuilder();
         if (distinct) {
