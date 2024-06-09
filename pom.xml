@@ -19,6 +19,7 @@
 		<mybatis-plus.version>3.4.0</mybatis-plus.version>
 		<sqlite.jdbc.version>3.8.9.1</sqlite.jdbc.version>
 		<derby.version>10.15.2.0</derby.version>
+		<hutool.version>5.8.2</hutool.version>
 	</properties>
 
 	<dependencyManagement>
@@ -91,6 +92,12 @@
 			<artifactId>derby</artifactId>
 			<version>${derby.version}</version>
 		</dependency>
+
+		<dependency>
+            		<groupId>cn.hutool</groupId>
+            		<artifactId>hutool-all</artifactId>
+            		<version>${hutool.version}</version>
+       		</dependency>
 	</dependencies>
 
 </project>
