@@ -99,4 +99,48 @@ public class SqlUtils {
         }
         return selectColumn.toString().replaceAll(",$", "");
     }
+
+    /**
+     * 分页查询
+     *
+     * @param condition 查询条件, 一般为主键或某些字段 在sql中 in
+     * @param fun       执行查询操作
+     * @param <T>       查询条件的类型, 比如主键可以为{@link String}或者{@link Long}
+     * @param <R>       查询结果类型
+     * @return 查询结果
+     */
+    public static <T, R> List<R> queryPage(List<T> condition, Function<List<T>, List<R>> fun) {
+        log.info("[queryPage]size={}", condition.size());
+        List<R> container = new ArrayList<>();
+        List<List<T>> splitList = CollUtil.split(condition, 960);
+        for (int i = 0; i < splitList.size(); i++) {
+            List<T> idSplit = splitList.get(i);
+            container.addAll(fun.apply(idSplit));
+            log.info("[queryPage]查询进度{}/{}", i + 1, splitList.size());
+        }
+        log.info("[queryPage]end list.size=" + container.size());
+        return container;
+    }
+
+    /**
+     * 使用流式分页查询
+     *
+     * @param condition  查询条件, 一般为主键或某些字段 在sql中 in
+     * @param biConsumer 执行查询操作
+     * @param <T>        查询条件的类型, 比如主键可以为{@link String}或者{@link Long}
+     * @param <R>        查询结果类型
+     * @return 查询结果
+     */
+    public static <T, R> List<R> queryPage(List<T> condition, BiConsumer<List<T>, List<R>> biConsumer) {
+        log.info("[queryPage]size={}", condition.size());
+        List<R> container = new ArrayList<>();
+        List<List<T>> splitList = CollUtil.split(condition, 960);
+        for (int i = 0; i < splitList.size(); i++) {
+            List<T> idSplit = splitList.get(i);
+            biConsumer.accept(idSplit, container);
+            log.info("[queryPage]查询进度{}/{}", i + 1, splitList.size());
+        }
+        log.info("[queryPage]end list.size=" + container.size());
+        return container;
+    }
 }
