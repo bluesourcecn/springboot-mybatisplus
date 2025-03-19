@@ -2,6 +2,7 @@ package com.cn.mybatis.utils;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -98,6 +99,18 @@ public class SqlUtils {
             selectColumn.append(toColumn(fn)).append(",");
         }
         return selectColumn.toString().replaceAll(",$", "");
+    }
+
+    /**
+     * 字段为空
+     *
+     * @param fn {@link SFunction}
+     * @return (xxx is null or xxx = '')
+     * @param <T> {@link T}
+     * @param <R> {@link R}
+     */
+    public static <T, R> Function<LambdaQueryWrapper<T>, LambdaQueryWrapper<T>> isEmpty(SFunction<T, R> fn) {
+        return queryWrapper -> queryWrapper.isNull(fn).or().eq(fn, "");
     }
 
     /**
