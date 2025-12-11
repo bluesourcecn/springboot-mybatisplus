@@ -10,9 +10,10 @@ import org.apache.commons.lang.StringUtils;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -113,7 +114,7 @@ public class SqlUtils {
         return queryWrapper -> queryWrapper.isNull(fn).or().eq(fn, "");
     }
 
-    /**
+ /**
      * 分页查询
      *
      * @param condition 查询条件, 一般为主键或某些字段 在sql中 in
@@ -122,14 +123,15 @@ public class SqlUtils {
      * @param <R>       查询结果类型
      * @return 查询结果
      */
-    public static <T, R> List<R> queryPage(List<T> condition, Function<List<T>, List<R>> fun) {
+    public static <T, R> List<R> queryPage(Collection<T> condition, Function<List<T>, List<R>> fun) {
         log.info("[queryPage]size={}", condition.size());
         List<R> container = new ArrayList<>();
         List<List<T>> splitList = CollUtil.split(condition, 960);
-        for (int i = 0; i < splitList.size(); i++) {
+        int size = splitList.size();
+        for (int i = 0; i < size; i++) {
             List<T> idSplit = splitList.get(i);
             container.addAll(fun.apply(idSplit));
-            log.info("[queryPage]查询进度{}/{}", i + 1, splitList.size());
+            log.info("[queryPage]查询进度{}/{}", i + 1, size);
         }
         log.info("[queryPage]end list.size=" + container.size());
         return container;
@@ -144,16 +146,38 @@ public class SqlUtils {
      * @param <R>        查询结果类型
      * @return 查询结果
      */
-    public static <T, R> List<R> queryPage(List<T> condition, BiConsumer<List<T>, List<R>> biConsumer) {
+    public static <T, R> List<R> queryPage(Collection<T> condition, BiConsumer<List<T>, List<R>> biConsumer) {
         log.info("[queryPage]size={}", condition.size());
         List<R> container = new ArrayList<>();
         List<List<T>> splitList = CollUtil.split(condition, 960);
-        for (int i = 0; i < splitList.size(); i++) {
+        int size = splitList.size();
+        for (int i = 0; i < size; i++) {
             List<T> idSplit = splitList.get(i);
             biConsumer.accept(idSplit, container);
-            log.info("[queryPage]查询进度{}/{}", i + 1, splitList.size());
+            log.info("[queryPage]查询进度{}/{}", i + 1, size);
         }
         log.info("[queryPage]end list.size=" + container.size());
         return container;
     }
+
+    /**
+     * 使用流式分页查询
+     *
+     * @param condition  查询条件, 一般为主键或某些字段 在sql中 in
+     * @param handler    结果处理器（流式处理，避免全量加载到内存）
+     * @param biConsumer 执行单批次查询的函数（接收子集 + handler）
+     * @param <T>        查询条件的类型, 比如主键可以为{@link String}或者{@link Long}
+     * @param <R>        查询结果类型
+     */
+    public static <T, R> void queryPage(Collection<T> condition, ResultHandler<R> handler, BiConsumer<List<T>, ResultHandler<R>> biConsumer) {
+        log.info("[queryPage]size={}", condition.size());
+        List<List<T>> splitList = CollUtil.split(condition, 960);
+        int size = splitList.size();
+        for (int i = 0; i < size; i++) {
+            List<T> idSplit = splitList.get(i);
+            biConsumer.accept(idSplit, handler);
+            log.info("[queryPage]查询进度{}/{}", i + 1, size);
+        }
+    }
 }
+
